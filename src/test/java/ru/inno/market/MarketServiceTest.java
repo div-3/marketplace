@@ -4,6 +4,8 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Tag;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.MethodSource;
 import ru.inno.market.core.Catalog;
 import ru.inno.market.core.MarketService;
 import ru.inno.market.model.Client;
@@ -125,6 +127,44 @@ public class MarketServiceTest {
     @DisplayName("Проверить, что в заказ не добавляется товар null.")
     public void shouldNotAddNullItemToOrder(){
         assertThrows(NoSuchElementException.class, () -> marketService.addItemToOrder(null, orderId));
+    }
+
+    private static int[] getWrongOrders(){
+        return new int[] {-1, 2};
+    }
+
+    @Tag("Negative")
+    @ParameterizedTest(name = "Номер заказа = {0}")
+    @MethodSource("getWrongOrders")
+    @DisplayName("Проверить, что добавление в несуществующий заказ невозможно.")
+    public void shouldNotAddToWrongOrder(int id){
+        assertThrows(NoSuchElementException.class,
+                () -> marketService.addItemToOrder(catalog.getItemById(1), id));
+    }
+
+    @Tag("Negative")
+    @ParameterizedTest(name = "Номер заказа = {0}")
+    @MethodSource("getWrongOrders")
+    @DisplayName("Проверить, что нельзя применить скидку к несуществующему заказу.")
+    public void shouldNotApplyDiscountToWrongOrder(int id){
+        assertThrows(NoSuchElementException.class,
+                () -> marketService.applyDiscountForOrder(id, PromoCodes.FIRST_ORDER));
+    }
+
+    @Tag("Negative")
+    @ParameterizedTest(name = "Номер заказа = {0}")
+    @MethodSource("getWrongOrders")
+    @DisplayName("Проверить, что возвращается NULL при запросе информации о несуществующем заказе.")
+    public void shouldNotGetInfoAboutWrongOrder(int id){
+        assertNull(marketService.getOrderInfo(id));
+    }
+
+    @Test
+    @Tag("Negative")
+    @DisplayName("Проверить, что нельзя применить скидку null к заказу.")
+    public void shouldNotApplyNullDiscountToOrder(){
+        assertThrows(NoSuchElementException.class,
+                () -> marketService.applyDiscountForOrder(orderId, null));
     }
 
 }

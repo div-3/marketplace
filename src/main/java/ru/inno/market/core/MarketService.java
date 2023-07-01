@@ -26,11 +26,18 @@ public class MarketService {
     }
 
     public void addItemToOrder(Item item, int orderId ){
-        if (item == null) throw new NoSuchElementException("Попытка добавить в заказ товар NULL!");  //Добавлена защита от передачи товара NULL
+        if (item == null)
+            throw new NoSuchElementException("Попытка добавить в заказ товар NULL!");  //Добавлена защита от передачи товара NULL
+        if (!orders.containsKey(orderId))
+            throw new NoSuchElementException("Попытка добавить товар в отсутствующий заказ!");  //Добавлена защита от передачи неправильного номера заказа
         orders.get(orderId).addItem(item);
     }
 
     public double applyDiscountForOrder(int orderId, PromoCodes codes){
+        if (!orders.containsKey(orderId))
+            throw new NoSuchElementException("Попытка добавить скидку в отсутствующий заказ!");  //Добавлена защита от передачи неправильного номера заказа
+        if (codes == null)
+            throw new NoSuchElementException("Попытка добавить скидку NULL в заказ!");  //Добавлена защита от передачи неправильного номера заказа
         Order order = orders.get(orderId);
         order.applyDiscount(codes.getDiscount());
         return order.getTotalPrice();
