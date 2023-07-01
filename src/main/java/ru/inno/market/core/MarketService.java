@@ -4,6 +4,7 @@ import ru.inno.market.model.*;
 
 import java.util.HashMap;
 import java.util.Map;
+import java.util.NoSuchElementException;
 
 public class MarketService {
 
@@ -16,6 +17,7 @@ public class MarketService {
     }
 
     public int createOrderFor(Client client){
+        if (client == null) throw new NoSuchElementException("Попытка создать заказ для клиента NULL!");  //Добавлена защита от передачи клиента NULL
         int id = orderCounter++;
         Order order = new Order(id, client);
         orders.put(id, order);
@@ -24,6 +26,7 @@ public class MarketService {
     }
 
     public void addItemToOrder(Item item, int orderId ){
+        if (item == null) throw new NoSuchElementException("Попытка добавить в заказ товар NULL!");  //Добавлена защита от передачи товара NULL
         orders.get(orderId).addItem(item);
     }
 
