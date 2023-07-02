@@ -34,7 +34,7 @@ public class MarketServiceTest {
     }
 
     @Test
-    @DisplayName("Проверить, что клиент правильно записался в заказ")
+    @DisplayName("Проверить, что клиент правильно записался в заказ.")
     public void shouldCreateOrder(){
         assertEquals(client, marketService.getOrderInfo(orderId).getClient());
     }
@@ -154,9 +154,10 @@ public class MarketServiceTest {
     @Tag("Negative")
     @ParameterizedTest(name = "Номер заказа = {0}")
     @MethodSource("getWrongOrders")
-    @DisplayName("Проверить, что возвращается NULL при запросе информации о несуществующем заказе.")
+    @DisplayName("Проверить, что нельзя получить несуществующий заказ.")
     public void shouldNotGetInfoAboutWrongOrder(int id){
-        assertNull(marketService.getOrderInfo(id));
+        assertThrows(NoSuchElementException.class,
+                () -> marketService.getOrderInfo(id));
     }
 
     @Test

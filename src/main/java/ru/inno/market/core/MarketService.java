@@ -16,7 +16,7 @@ public class MarketService {
         orders = new HashMap<>();
     }
 
-    public int createOrderFor(Client client){
+    public int createOrderFor(Client client) throws NoSuchElementException{
         if (client == null) throw new NoSuchElementException("Попытка создать заказ для клиента NULL!");  //Добавлена защита от передачи клиента NULL
         int id = orderCounter++;
         Order order = new Order(id, client);
@@ -25,7 +25,7 @@ public class MarketService {
         return order.getId();
     }
 
-    public void addItemToOrder(Item item, int orderId ){
+    public void addItemToOrder(Item item, int orderId ) throws NoSuchElementException{
         if (item == null)
             throw new NoSuchElementException("Попытка добавить в заказ товар NULL!");  //Добавлена защита от передачи товара NULL
         if (!orders.containsKey(orderId))
@@ -33,7 +33,7 @@ public class MarketService {
         orders.get(orderId).addItem(item);
     }
 
-    public double applyDiscountForOrder(int orderId, PromoCodes codes){
+    public double applyDiscountForOrder(int orderId, PromoCodes codes) throws NoSuchElementException{
         if (!orders.containsKey(orderId))
             throw new NoSuchElementException("Попытка добавить скидку в отсутствующий заказ!");  //Добавлена защита от передачи неправильного номера заказа
         if (codes == null)
@@ -43,7 +43,9 @@ public class MarketService {
         return order.getTotalPrice();
     }
 
-    public Order getOrderInfo(int id) {
+    public Order getOrderInfo(int id) throws NoSuchElementException {
+        if (!orders.containsKey(id))
+            throw new NoSuchElementException("Попытка получить отсутствующий заказ!");  //Добавлена защита от передачи неправильного номера заказа
         return orders.get(id);
     }
 }
