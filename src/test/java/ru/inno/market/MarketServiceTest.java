@@ -196,5 +196,4 @@ public class MarketServiceTest {
     public void shouldNotApplyNullDiscountToOrder() {
         assertThrows(NoSuchElementException.class, () -> marketService.applyDiscountForOrder(orderId, null));
     }
-
 }

@@ -274,4 +274,5 @@ public class OrderTest {
         //Добавляем ещё одну единицу товара
         assertThrows(NoSuchElementException.class, () -> order.addItem(catalog.getItemById(itemRec.item().getId())));
     }
+
 }
