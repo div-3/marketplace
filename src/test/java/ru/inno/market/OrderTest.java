@@ -12,7 +12,7 @@ import java.util.NoSuchElementException;
 
 import static org.junit.jupiter.api.Assertions.*;
 
-@DisplayName("Тесты класса MarketService:")
+@DisplayName("Тесты класса Order:")
 @TestMethodOrder(MethodOrderer.OrderAnnotation.class)
 public class OrderTest {
     private ru.inno.market.model.Order order;
@@ -22,16 +22,16 @@ public class OrderTest {
     Catalog catalog;
 
     @BeforeEach
-    public void setUp(){
+    public void setUp() {
         catalog = new Catalog();
         client = new Client(1, "Mike");
-        order = new ru.inno.market.model.Order(orderId,client);
+        order = new ru.inno.market.model.Order(orderId, client);
     }
 
     @Test
     @Order(1)
     @DisplayName("Создание заказа.")
-    public void shouldCreateOrder(){
+    public void shouldCreateOrder() {
         assertNotNull(order);
         assertEquals(client, order.getClient());
         assertEquals(orderId, order.getId());
@@ -40,21 +40,21 @@ public class OrderTest {
     @Test
     @Order(2)
     @DisplayName("Получение id заказа.")
-    public void shouldGetOrderId(){
+    public void shouldGetOrderId() {
         assertEquals(orderId, order.getId());
     }
 
     @Test
     @Order(3)
     @DisplayName("Получение клиента из заказа.")
-    public void shouldGetClientFromOrder(){
+    public void shouldGetClientFromOrder() {
         assertEquals(client, order.getClient());
     }
 
     @Test
     @Order(4)
     @DisplayName("Добавление одного товара к заказу.")
-    public void shouldAddItemToOrder(){
+    public void shouldAddItemToOrder() {
         ItemAndItemCountRecord ir = getGoodItem(0);
         order.addItem(ir.item());
         assertTrue(order.getItems().containsKey(ir.item()));  //Проверка, что добавился нужный товар
@@ -64,7 +64,7 @@ public class OrderTest {
     @Test
     @Order(5)
     @DisplayName("Добавление двух разных товаров к заказу.")
-    public void shouldAddTwoItemsToOrder(){
+    public void shouldAddTwoItemsToOrder() {
         ItemAndItemCountRecord ir1 = getGoodItem(0);
         ItemAndItemCountRecord ir2 = getGoodItem(ir1.item().getId());
         order.addItem(ir1.item());
@@ -75,7 +75,7 @@ public class OrderTest {
         assertEquals(1, order.getCart().get(ir2.item()));    //Проверка, что добавилась только 1 единица товара
     }
 
-    //Получение первой единицы товара со склада с остатком более 1 шт.
+    //Получение первой единицы товара со склада с остатком более 1 шт. Возвращает Record(Item, int itemCount).
     private ItemAndItemCountRecord getGoodItem(int currentItemId) {
         Item item;
         int count;
@@ -84,11 +84,12 @@ public class OrderTest {
                 try {
                     item = catalog.getItemById(i);
                     count = catalog.getCountForItem(item) + 1;
-                    if ( count > 0) {
+                    if (count > 0) {
                         itemId = i;
                         return new ItemAndItemCountRecord(item, count);
                     }
-                } catch (Exception e) {}    //Если товара нет на складе, проверять следующий id
+                } catch (Exception e) {
+                }    //Если товара нет на складе, проверять следующий id
             }
         }
         return null;
@@ -97,7 +98,7 @@ public class OrderTest {
     @Test
     @Order(6)
     @DisplayName("Проверить, что в заказ можно добавить всё количество определённого товара.")
-    public void shouldAddTotalItemQuantityToOrder(){
+    public void shouldAddTotalItemQuantityToOrder() {
         int itemNumber = 0;
         ItemAndItemCountRecord itemRec = getGoodItem(itemNumber);
         ItemAndItemCountRecord result = addTotalAmountOfItemToOrder(itemRec.item());
@@ -121,7 +122,7 @@ public class OrderTest {
     @Test
     @Order(7)
     @DisplayName("Проверить, что скидка применяется к заказу")
-    public void shouldApplyDiscountToOrder(){
+    public void shouldApplyDiscountToOrder() {
         double totalPrice = add3ItemsToOrder();     //Добавляем 3 разных товара
         order.applyDiscount(PromoCodes.FIRST_ORDER.getDiscount());
 
@@ -129,6 +130,7 @@ public class OrderTest {
                 order.getTotalPrice());  //Скидка в заказе применилась правильно
     }
 
+    //Добавляет 3 различных товара к заказу и возвращает общую стоимость этих товаров
     private double add3ItemsToOrder() {
         double totalPrice = 0;
         int itemId = 0;
@@ -144,7 +146,7 @@ public class OrderTest {
     @Test
     @Order(8)
     @DisplayName("Получение корзины из заказа")
-    public void shouldGetCartFromOrder(){
+    public void shouldGetCartFromOrder() {
         int startItemId = 0;
         ItemAndItemCountRecord ir1 = getGoodItem(startItemId);
         ItemAndItemCountRecord ir2 = getGoodItem(ir1.item().getId());
@@ -170,7 +172,7 @@ public class OrderTest {
     @Test
     @Order(9)
     @DisplayName("Получение общей стоимости корзины в заказе")
-    public void shouldGetTotalAmountOfOrder(){
+    public void shouldGetTotalAmountOfOrder() {
         double totalPrice = add3ItemsToOrder();     //Добавляем 3 разных товара
 
         assertEquals(totalPrice, order.getTotalPrice());
@@ -179,7 +181,7 @@ public class OrderTest {
     @Test
     @Order(10)
     @DisplayName("Получение признака применённой скидки")
-    public void shouldGetDiscountStatusFromOrder(){
+    public void shouldGetDiscountStatusFromOrder() {
         double totalPrice = add3ItemsToOrder();     //Добавляем 3 разных товара
         order.applyDiscount(PromoCodes.FIRST_ORDER.getDiscount());
 
@@ -191,7 +193,7 @@ public class OrderTest {
     @Test
     @Order(11)
     @DisplayName("Проверить функцию equals в классе Order")
-    public void shouldProperlyOrderEquals(){
+    public void shouldProperlyOrderEquals() {
         int startItemId = 0;
         ItemAndItemCountRecord ir1 = getGoodItem(startItemId);
         ItemAndItemCountRecord ir2 = getGoodItem(ir1.item().getId());
@@ -213,7 +215,7 @@ public class OrderTest {
     @Order(12)
     @Tag("Negative")
     @DisplayName("Проверить, что не создаётся заказ для клиента null.")
-    public void shouldNotCreateOrderForNullClient(){
+    public void shouldNotCreateOrderForNullClient() {
         assertThrows(NoSuchElementException.class, () -> new ru.inno.market.model.Order(2, null));
     }
 
@@ -221,7 +223,7 @@ public class OrderTest {
     @Order(13)
     @Tag("Negative")
     @DisplayName("Создание заказа с id < 0.")
-    public void shouldNotCreateOrderWithWrongId(){
+    public void shouldNotCreateOrderWithWrongId() {
         assertThrows(NoSuchElementException.class, () -> new ru.inno.market.model.Order(-2, client));
     }
 
@@ -229,7 +231,7 @@ public class OrderTest {
     @Order(14)
     @Tag("Negative")
     @DisplayName("Добавление в заказ товара NULL.")
-    public void shouldNotAddNullItemToOrder(){
+    public void shouldNotAddNullItemToOrder() {
         assertThrows(NoSuchElementException.class, () -> order.addItem(null));
     }
 
@@ -238,13 +240,13 @@ public class OrderTest {
     @ParameterizedTest(name = "Скидка = {0}")
     @MethodSource("getWrongDiscount")
     @DisplayName("Применение скидки меньше 0 или больше 1")
-    public void shouldNotApplyWrongDiscountToOrder(double discount){
+    public void shouldNotApplyWrongDiscountToOrder(double discount) {
         double totalPrice = add3ItemsToOrder();     //Добавляем 3 разных товара
 
         assertThrows(NoSuchElementException.class, () -> order.applyDiscount(discount));
     }
 
-    private static double[] getWrongDiscount(){
+    private static double[] getWrongDiscount() {
         return new double[]{-0.1, 1.1};
     }
 
@@ -252,7 +254,7 @@ public class OrderTest {
     @Order(16)
     @Tag("Negative")
     @DisplayName("Повторное применение скидки.")
-    public void shouldNotApplyDiscountToOrderMoreThanOnce(){
+    public void shouldNotApplyDiscountToOrderMoreThanOnce() {
         double totalPrice = add3ItemsToOrder();     //Добавляем 3 разных товара
         order.applyDiscount(PromoCodes.FIRST_ORDER.getDiscount());
         order.applyDiscount(PromoCodes.FIRST_ORDER.getDiscount());  //Повторное применение скидки
@@ -264,7 +266,7 @@ public class OrderTest {
     @Order(17)
     @Tag("Negative")
     @DisplayName("Проверить, что в заказ нельзя добавить товар в количестве, превышающем остаток на складе.")
-    public void shouldNotAddMoreThanTotalItemQuantityToOrder(){
+    public void shouldNotAddMoreThanTotalItemQuantityToOrder() {
         int itemNumber = 0;
         ItemAndItemCountRecord itemRec = getGoodItem(itemNumber);
         ItemAndItemCountRecord result = addTotalAmountOfItemToOrder(itemRec.item());    //Добавляем к заказу весь объём товара
