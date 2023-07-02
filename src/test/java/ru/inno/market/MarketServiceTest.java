@@ -21,8 +21,6 @@ public class MarketServiceTest {
     int orderId;
     int itemId = 1;
     Catalog catalog;
-    private record itemAndItemCountRecord(Item item1, int itemCount) {
-    }
 
     @BeforeEach
     public void setUp(){
@@ -43,10 +41,12 @@ public class MarketServiceTest {
     @Order(2)
     @DisplayName("Проверить, что товар добавляется к заказу")
     public void shouldAddItemToOrder(){
+
         Item item = catalog.getItemById(itemId);
         marketService.addItemToOrder(item, orderId);
 
-        assertTrue(marketService.getOrderInfo(orderId).getItems().keySet().contains(item));
+        assertTrue(marketService.getOrderInfo(orderId).getItems().containsKey(item));
+        assertEquals(1, marketService.getOrderInfo(orderId).getItems().size());
     }
 
     @Test
@@ -65,14 +65,14 @@ public class MarketServiceTest {
     @DisplayName("Проверить, что в заказ можно добавить всё количество определённого товара.")
     public void shouldAddTotalItemQuantityToOrder(){
         int itemNumber = 1;
-        itemAndItemCountRecord result = addTotalAmountOfItemToOrder(itemNumber);
+        ItemAndItemCountRecord result = addTotalAmountOfItemToOrder(itemNumber);
 
         //Сравниваем количество товара в заказе и исходное количество товара на складе
-        assertEquals(result.itemCount(), marketService.getOrderInfo(orderId).getItems().get(result.item1()));
+        assertEquals(result.itemCount(), marketService.getOrderInfo(orderId).getItems().get(result.item()));
     }
 
     //Добавление всего объёма для одного товара в заказ. Возвращает Record(Item, int itemCount).
-    private itemAndItemCountRecord addTotalAmountOfItemToOrder(int itemNumber) {
+    private ItemAndItemCountRecord addTotalAmountOfItemToOrder(int itemNumber) {
         Item item1 = catalog.getItemById(itemNumber);       //Получили товар с индексом 1 и забрали 1 единицу со склада
         int itemCount = catalog.getCountForItem(item1) + 1; //Исходное количество товара на складе
         marketService.addItemToOrder(item1, orderId);      //Добавление первой единицы товара в заказ
@@ -81,7 +81,7 @@ public class MarketServiceTest {
         for (int i = 0; i < itemCount - 1; i++) {
             marketService.addItemToOrder(catalog.getItemById(itemNumber), orderId);
         }
-        return new itemAndItemCountRecord(item1, itemCount);
+        return new ItemAndItemCountRecord(item1, itemCount);
     }
 
     @Test
@@ -98,13 +98,13 @@ public class MarketServiceTest {
     }
 
     private double add3ItemsToOrder() {
-        Item item1 = catalog.getItemById(1);
-        Item item2 = catalog.getItemById(2);
-        Item item3 = catalog.getItemById(3);
-        marketService.addItemToOrder(item1, orderId);
-        marketService.addItemToOrder(item2, orderId);
-        marketService.addItemToOrder(item3, orderId);
-        return item1.getPrice() + item2.getPrice() + item3.getPrice();
+        double totalPrice = 0;
+        for (int i = 1; i < 4; i++) {
+            Item item = catalog.getItemById(i);
+            marketService.addItemToOrder(item, orderId);
+            totalPrice += item.getPrice();
+        }
+        return totalPrice;
     }
 
     @Test
