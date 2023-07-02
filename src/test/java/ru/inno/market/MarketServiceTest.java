@@ -1,9 +1,6 @@
 package ru.inno.market;
 
-import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.DisplayName;
-import org.junit.jupiter.api.Tag;
-import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.*;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.MethodSource;
 import ru.inno.market.core.Catalog;
@@ -16,6 +13,8 @@ import java.util.NoSuchElementException;
 
 import static org.junit.jupiter.api.Assertions.*;
 
+@DisplayName("Тесты класса MarketService:")
+@TestMethodOrder(MethodOrderer.OrderAnnotation.class)
 public class MarketServiceTest {
     private MarketService marketService;
     private Client client;
@@ -34,12 +33,14 @@ public class MarketServiceTest {
     }
 
     @Test
+    @Order(1)
     @DisplayName("Проверить, что клиент правильно записался в заказ.")
     public void shouldCreateOrder(){
         assertEquals(client, marketService.getOrderInfo(orderId).getClient());
     }
 
     @Test
+    @Order(2)
     @DisplayName("Проверить, что товар добавляется к заказу")
     public void shouldAddItemToOrder(){
         Item item = catalog.getItemById(itemId);
@@ -49,6 +50,7 @@ public class MarketServiceTest {
     }
 
     @Test
+    @Order(3)
     @DisplayName("Проверить, что скидка применяется к заказу")
     public void shouldApplyDiscountToOrder(){
         double totalPrice = add3ItemsToOrder();     //Добавляем 3 разных товара
@@ -59,40 +61,7 @@ public class MarketServiceTest {
     }
 
     @Test
-    @Tag("Negative")
-    @DisplayName("Проверить, что скидка не применяется к заказу второй раз")
-    public void shouldNotApplyDiscountToOrderMoreThanOnce(){
-        double totalPrice = add3ItemsToOrder();     //Добавляем 3 разных товара
-        marketService.applyDiscountForOrder(orderId, PromoCodes.FIRST_ORDER);
-        marketService.applyDiscountForOrder(orderId, PromoCodes.FIRST_ORDER);  //Повторное применение скидки
-
-        assertEquals(totalPrice * (1 - PromoCodes.FIRST_ORDER.getDiscount()),
-                marketService.getOrderInfo(orderId).getTotalPrice());
-    }
-
-    private double add3ItemsToOrder() {
-        Item item1 = catalog.getItemById(1);
-        Item item2 = catalog.getItemById(2);
-        Item item3 = catalog.getItemById(3);
-        marketService.addItemToOrder(item1, orderId);
-        marketService.addItemToOrder(item2, orderId);
-        marketService.addItemToOrder(item3, orderId);
-        return item1.getPrice() + item2.getPrice() + item3.getPrice();
-    }
-
-    @Test
-    @Tag("Negative")
-    @DisplayName("Проверить, что в заказ нельзя добавить товар в количестве, превышающем остаток на складе.")
-    public void shouldNotAddMoreThanTotalItemQuantityToOrder(){
-        int itemNumber = 1;
-        addTotalAmountOfItemToOrder(itemNumber);    //Добавляем весь объём одного товара в заказ
-
-        //Добавление несуществующей единицы товара должно вызывать исключение
-        assertThrows(NoSuchElementException.class,
-                () -> marketService.addItemToOrder(catalog.getItemById(itemNumber), orderId));
-    }
-
-    @Test
+    @Order(4)
     @DisplayName("Проверить, что в заказ можно добавить всё количество определённого товара.")
     public void shouldAddTotalItemQuantityToOrder(){
         int itemNumber = 1;
@@ -116,6 +85,43 @@ public class MarketServiceTest {
     }
 
     @Test
+    @Order(5)
+    @Tag("Negative")
+    @DisplayName("Проверить, что скидка не применяется к заказу второй раз")
+    public void shouldNotApplyDiscountToOrderMoreThanOnce(){
+        double totalPrice = add3ItemsToOrder();     //Добавляем 3 разных товара
+        marketService.applyDiscountForOrder(orderId, PromoCodes.FIRST_ORDER);
+        marketService.applyDiscountForOrder(orderId, PromoCodes.FIRST_ORDER);  //Повторное применение скидки
+
+        assertEquals(totalPrice * (1 - PromoCodes.FIRST_ORDER.getDiscount()),
+                marketService.getOrderInfo(orderId).getTotalPrice());
+    }
+
+    private double add3ItemsToOrder() {
+        Item item1 = catalog.getItemById(1);
+        Item item2 = catalog.getItemById(2);
+        Item item3 = catalog.getItemById(3);
+        marketService.addItemToOrder(item1, orderId);
+        marketService.addItemToOrder(item2, orderId);
+        marketService.addItemToOrder(item3, orderId);
+        return item1.getPrice() + item2.getPrice() + item3.getPrice();
+    }
+
+    @Test
+    @Order(6)
+    @Tag("Negative")
+    @DisplayName("Проверить, что в заказ нельзя добавить товар в количестве, превышающем остаток на складе.")
+    public void shouldNotAddMoreThanTotalItemQuantityToOrder(){
+        int itemNumber = 1;
+        addTotalAmountOfItemToOrder(itemNumber);    //Добавляем весь объём одного товара в заказ
+
+        //Добавление несуществующей единицы товара должно вызывать исключение
+        assertThrows(NoSuchElementException.class,
+                () -> marketService.addItemToOrder(catalog.getItemById(itemNumber), orderId));
+    }
+
+    @Test
+    @Order(7)
     @Tag("Negative")
     @DisplayName("Проверить, что не создаётся заказ для клиента null.")
     public void shouldNotCreateOrderForNullClient(){
@@ -123,6 +129,7 @@ public class MarketServiceTest {
     }
 
     @Test
+    @Order(8)
     @Tag("Negative")
     @DisplayName("Проверить, что в заказ не добавляется товар null.")
     public void shouldNotAddNullItemToOrder(){
@@ -133,15 +140,16 @@ public class MarketServiceTest {
         return new int[] {-1, 2};
     }
 
+    @Order(9)
     @Tag("Negative")
     @ParameterizedTest(name = "Номер заказа = {0}")
     @MethodSource("getWrongOrders")
     @DisplayName("Проверить, что добавление в несуществующий заказ невозможно.")
     public void shouldNotAddToWrongOrder(int id){
-        assertThrows(NoSuchElementException.class,
-                () -> marketService.addItemToOrder(catalog.getItemById(1), id));
+        assertThrows(NoSuchElementException.class, () -> marketService.addItemToOrder(catalog.getItemById(1), id));
     }
 
+    @Order(10)
     @Tag("Negative")
     @ParameterizedTest(name = "Номер заказа = {0}")
     @MethodSource("getWrongOrders")
@@ -151,21 +159,21 @@ public class MarketServiceTest {
                 () -> marketService.applyDiscountForOrder(id, PromoCodes.FIRST_ORDER));
     }
 
+    @Order(11)
     @Tag("Negative")
     @ParameterizedTest(name = "Номер заказа = {0}")
     @MethodSource("getWrongOrders")
     @DisplayName("Проверить, что нельзя получить несуществующий заказ.")
     public void shouldNotGetInfoAboutWrongOrder(int id){
-        assertThrows(NoSuchElementException.class,
-                () -> marketService.getOrderInfo(id));
+        assertThrows(NoSuchElementException.class, () -> marketService.getOrderInfo(id));
     }
 
     @Test
+    @Order(12)
     @Tag("Negative")
     @DisplayName("Проверить, что нельзя применить скидку null к заказу.")
     public void shouldNotApplyNullDiscountToOrder(){
-        assertThrows(NoSuchElementException.class,
-                () -> marketService.applyDiscountForOrder(orderId, null));
+        assertThrows(NoSuchElementException.class, () -> marketService.applyDiscountForOrder(orderId, null));
     }
 
 }
