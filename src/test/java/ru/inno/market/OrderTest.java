@@ -1,10 +1,14 @@
 package ru.inno.market;
 
 import org.junit.jupiter.api.*;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.MethodSource;
 import ru.inno.market.core.Catalog;
 import ru.inno.market.model.Client;
 import ru.inno.market.model.Item;
 import ru.inno.market.model.PromoCodes;
+
+import java.util.NoSuchElementException;
 
 import static org.junit.jupiter.api.Assertions.*;
 
@@ -205,4 +209,67 @@ public class OrderTest {
         assertEquals(order, order2);
     }
 
+    @Test
+    @Order(12)
+    @Tag("Negative")
+    @DisplayName("Проверить, что не создаётся заказ для клиента null.")
+    public void shouldNotCreateOrderForNullClient(){
+        assertThrows(NoSuchElementException.class, () -> new ru.inno.market.model.Order(2, null));
+    }
+
+    @Test
+    @Order(13)
+    @Tag("Negative")
+    @DisplayName("Создание заказа с id < 0.")
+    public void shouldNotCreateOrderWithWrongId(){
+        assertThrows(NoSuchElementException.class, () -> new ru.inno.market.model.Order(-2, client));
+    }
+
+    @Test
+    @Order(14)
+    @Tag("Negative")
+    @DisplayName("Добавление в заказ товара NULL.")
+    public void shouldNotAddNullItemToOrder(){
+        assertThrows(NoSuchElementException.class, () -> order.addItem(null));
+    }
+
+    @Order(15)
+    @Tag("Negative")
+    @ParameterizedTest(name = "Скидка = {0}")
+    @MethodSource("getWrongDiscount")
+    @DisplayName("Применение скидки меньше 0 или больше 1")
+    public void shouldNotApplyWrongDiscountToOrder(double discount){
+        double totalPrice = add3ItemsToOrder();     //Добавляем 3 разных товара
+
+        assertThrows(NoSuchElementException.class, () -> order.applyDiscount(discount));
+    }
+
+    private static double[] getWrongDiscount(){
+        return new double[]{-0.1, 1.1};
+    }
+
+    @Test
+    @Order(16)
+    @Tag("Negative")
+    @DisplayName("Повторное применение скидки.")
+    public void shouldNotApplyDiscountToOrderMoreThanOnce(){
+        double totalPrice = add3ItemsToOrder();     //Добавляем 3 разных товара
+        order.applyDiscount(PromoCodes.FIRST_ORDER.getDiscount());
+        order.applyDiscount(PromoCodes.FIRST_ORDER.getDiscount());  //Повторное применение скидки
+
+        assertEquals(totalPrice * (1 - PromoCodes.FIRST_ORDER.getDiscount()), order.getTotalPrice());
+    }
+
+    @Test
+    @Order(17)
+    @Tag("Negative")
+    @DisplayName("Проверить, что в заказ нельзя добавить товар в количестве, превышающем остаток на складе.")
+    public void shouldNotAddMoreThanTotalItemQuantityToOrder(){
+        int itemNumber = 0;
+        ItemAndItemCountRecord itemRec = getGoodItem(itemNumber);
+        ItemAndItemCountRecord result = addTotalAmountOfItemToOrder(itemRec.item());    //Добавляем к заказу весь объём товара
+
+        //Добавляем ещё одну единицу товара
+        assertThrows(NoSuchElementException.class, () -> order.addItem(catalog.getItemById(itemRec.item().getId())));
+    }
 }

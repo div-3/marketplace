@@ -2,6 +2,7 @@ package ru.inno.market.model;
 
 import java.util.HashMap;
 import java.util.Map;
+import java.util.NoSuchElementException;
 import java.util.Objects;
 
 public class Order {
@@ -13,6 +14,8 @@ public class Order {
     private boolean discountApplied;
 
     public Order(int id, Client client) {
+        if (client == null) throw new NoSuchElementException("Попытка создать заказ для клиента NULL!");  //Добавлена защита от передачи клиента NULL
+        if (id < 0) throw new NoSuchElementException("Попытка создать заказ c id меньше 0!");  //Добавлена защита от передачи клиента NULL
         this.id = id;
         this.client = client;
         cart = new HashMap<>();
@@ -29,12 +32,15 @@ public class Order {
     }
 
     public void addItem(Item item) {
+        if (item == null)
+            throw new NoSuchElementException("Попытка добавить в заказ товар NULL!");  //Добавлена защита от передачи товара NULL
         int counter = cart.getOrDefault(item, 0);
         cart.put(item, ++counter);
         totalPrice += item.getPrice();
     }
 
     public void applyDiscount(double discount) {
+        if (discount < 0 || discount > 1.0) throw new NoSuchElementException("Попытка применить некорректную скидку!");  //Добавлена защита от неправильной скидки
         if (!discountApplied) {
             totalPrice *= (1- discount);
             discountApplied = true;
